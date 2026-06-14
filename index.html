@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head><script src="/_sdk/telemetry_sdk.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Anak Islam</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&amp;display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Nunito', sans-serif; }
+    html, body { height: 100%; margin: 0; }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+    @keyframes confetti-fall {
+      0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(500%) rotate(720deg); opacity: 0; }
+    }
+    @keyframes bounce-in {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(255,182,193,0.4); }
+      50% { box-shadow: 0 0 40px rgba(255,182,193,0.8); }
+    }
+    .float { animation: float 3s ease-in-out infinite; }
+    .twinkle { animation: twinkle 2s ease-in-out infinite; }
+    .bounce-in { animation: bounce-in 0.5s ease-out; }
+    .confetti-piece {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      animation: confetti-fall 3s ease-in forwards;
+    }
+    .btn-quiz {
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-quiz:hover {
+      transform: scale(1.05);
+    }
+    .btn-quiz:active {
+      transform: scale(0.95);
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/telemetry_sdk.js"></script>
+ </head>
+ <body class="h-full overflow-auto" style="background: linear-gradient(180deg, #E3F2FD 0%, #FFF8E1 50%, #FCE4EC 100%);">
+  <div id="app" class="h-full w-full relative"><!-- Decorations -->
+   <div id="decorations" class="absolute inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute top-[5%] left-[10%] text-4xl float" style="animation-delay:0s">
+     ☁️
+    </div>
+    <div class="absolute top-[8%] right-[15%] text-3xl float" style="animation-delay:1s">
+     ☁️
+    </div>
+    <div class="absolute top-[15%] left-[60%] text-2xl float" style="animation-delay:2s">
+     ☁️
+    </div>
+    <div class="absolute top-[3%] left-[40%] text-2xl twinkle">
+     ⭐
+    </div>
+    <div class="absolute top-[12%] right-[30%] text-xl twinkle" style="animation-delay:0.5s">
+     ⭐
+    </div>
+    <div class="absolute top-[6%] right-[10%] text-3xl float" style="animation-delay:1.5s">
+     🌙
+    </div>
+    <div class="absolute bottom-[5%] left-[5%] text-2xl float" style="animation-delay:0.8s">
+     🌸
+    </div>
+    <div class="absolute bottom-[10%] right-[8%] text-2xl float" style="animation-delay:1.2s">
+     🌷
+    </div>
+   </div><!-- Start Screen -->
+   <div id="start-screen" class="h-full w-full flex items-center justify-center relative z-10"><button onclick="startQuiz()" class="btn-quiz bg-gradient-to-br from-pink-300 to-orange-200 text-white text-3xl font-black px-12 py-8 rounded-full shadow-xl" style="animation: pulse-glow 2s infinite;"> 🌟 Mulai Quiz 🌟 </button>
+   </div><!-- Quiz Screen -->
+   <div id="quiz-screen" class="h-full w-full hidden flex-col items-center justify-center p-6 relative z-10">
+    <div class="w-full max-w-lg">
+     <div class="flex justify-between items-center mb-4"><span id="q-number" class="bg-blue-200 text-blue-700 font-bold px-4 py-2 rounded-full text-lg">1/10</span> <span id="q-score" class="bg-pink-200 text-pink-700 font-bold px-4 py-2 rounded-full text-lg">⭐ 0</span>
+     </div>
+     <div class="bg-white/80 backdrop-blur rounded-3xl p-8 shadow-lg mb-6">
+      <p id="q-text" class="text-xl font-bold text-gray-700 text-center leading-relaxed"></p>
+     </div>
+     <div id="q-options" class="grid gap-3"></div>
+     <div id="q-feedback" class="text-center mt-6 font-bold hidden bounce-in bg-blue-50 p-4 rounded-2xl text-base"></div><button id="next-btn" onclick="goNext()" class="btn-quiz hidden mt-6 bg-gradient-to-br from-pink-300 to-orange-300 text-white text-lg font-black px-8 py-4 rounded-full shadow-lg w-full">➜ Soal Berikutnya!</button>
+    </div>
+   </div><!-- Result Screen -->
+   <div id="result-screen" class="h-full w-full hidden flex-col items-center justify-center p-6 relative z-10">
+    <div id="confetti-container" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+    <div class="bg-white/80 backdrop-blur rounded-3xl p-10 shadow-xl text-center max-w-md bounce-in">
+     <div class="text-6xl mb-4">
+      🏆
+     </div>
+     <p id="result-msg" class="text-2xl font-black text-pink-500 mb-2"></p>
+     <p id="result-score" class="text-4xl font-black text-orange-400 mb-6"></p>
+     <div class="text-4xl mb-6">
+      ⭐🌟⭐
+     </div><button onclick="resetQuiz()" class="btn-quiz bg-gradient-to-br from-blue-300 to-purple-300 text-white text-xl font-black px-10 py-5 rounded-full shadow-lg"> 🎮 Main Lagi! </button>
+    </div>
+   </div>
+  </div>
+  <script>
+const questions = [
+  { q: "Nabi terakhir yang diutus Allah adalah Nabi Muhammad SAW", type: "tf", answer: true, explanation: "✅ Benar! Nabi Muhammad SAW adalah nabi dan rasul terakhir yang diutus Allah kepada seluruh umat manusia." },
+  { q: "Salat wajib dilakukan 3 kali sehari", type: "tf", answer: false, explanation: "❌ Salah! Salat wajib dilakukan 5 kali sehari yaitu Subuh, Dzuhur, Asar, Maghrib, dan Isya." },
+  { q: "Berapa jumlah rakaat salat Maghrib?", type: "mc", options: ["2 rakaat","3 rakaat","4 rakaat","1 rakaat"], answer: 1, explanation: "✅ Salat Maghrib terdiri dari 3 rakaat, yang merupakan salat wajib setelah matahari terbenam." },
+  { q: "Puasa Ramadan wajib dilakukan selama...", type: "mc", options: ["1 bulan","2 bulan","1 minggu","3 hari"], answer: 0, explanation: "✅ Puasa Ramadan wajib dilakukan selama 1 bulan (29 atau 30 hari) sebagai ibadah kepada Allah." },
+  { q: "Sebelum makan kita membaca doa", type: "tf", answer: true, explanation: "✅ Benar! Kita harus membaca 'Bismillah' sebelum makan sebagai bentuk syukur kepada Allah." },
+  { q: "Siapa nabi yang membelah laut?", type: "mc", options: ["Nabi Isa","Nabi Musa","Nabi Nuh","Nabi Adam"], answer: 1, explanation: "✅ Nabi Musa AS membelah laut untuk menyelamatkan umat Ismail dari kejaran Firaun dan tentaranya." },
+  { q: "Apakah kita boleh berbohong kepada teman", type: "tf", answer: false, explanation: "❌ Salah! Berbohong adalah dosa dan tidak boleh dilakukan. Kita harus selalu jujur dalam setiap perkataan." },
+  { q: "Apa nama kitab suci umat Islam?", type: "mc", options: ["Injil","Taurat","Al-Quran","Zabur"], answer: 2, explanation: "✅ Al-Quran adalah kitab suci umat Islam yang diturunkan kepada Nabi Muhammad SAW dan penuh dengan petunjuk hidup." },
+  { q: "Jumlah rukun Islam ada 5", type: "tf", answer: true, explanation: "✅ Benar! Lima rukun Islam adalah Syahadat, Salat, Zakat, Puasa, dan Haji (bagi yang mampu)." },
+  { q: "Doa masuk kamar mandi diawali dengan...", type: "mc", options: ["Bismillah","Alhamdulillah","Subhanallah","Allahu Akbar"], answer: 0, explanation: "✅ Doa masuk kamar mandi diawali dengan 'Bismillah' dan dilanjutkan dengan doa khusus perlindungan." },
+];
+
+let current = 0, score = 0, answered = false;
+
+// Web Audio API Sound Effects
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+function getAudioCtx() { if (!audioCtx) audioCtx = new AudioCtx(); return audioCtx; }
+
+function playClick() {
+  const ctx = getAudioCtx();
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type = 'sine'; o.frequency.setValueAtTime(800, ctx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.08);
+  g.gain.setValueAtTime(0.3, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+  o.start(); o.stop(ctx.currentTime + 0.1);
+}
+
+function playCorrect() {
+  const ctx = getAudioCtx();
+  [523, 659, 784].forEach((freq, i) => {
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.3, ctx.currentTime + i*0.12);
+    g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i*0.12 + 0.3);
+    o.start(ctx.currentTime + i*0.12); o.stop(ctx.currentTime + i*0.12 + 0.3);
+  });
+}
+
+function playWrong() {
+  const ctx = getAudioCtx();
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type = 'square'; o.frequency.setValueAtTime(200, ctx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.3);
+  g.gain.setValueAtTime(0.2, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+  o.start(); o.stop(ctx.currentTime + 0.3);
+}
+
+function playCelebration() {
+  const ctx = getAudioCtx();
+  const notes = [523,659,784,1047,784,1047,1319,1568];
+  notes.forEach((freq, i) => {
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.25, ctx.currentTime + i*0.15);
+    g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i*0.15 + 0.3);
+    o.start(ctx.currentTime + i*0.15); o.stop(ctx.currentTime + i*0.15 + 0.3);
+  });
+  // Firework crackle sounds
+  setTimeout(() => {
+    for (let i = 0; i < 5; i++) {
+      setTimeout(() => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        const f = ctx.createBiquadFilter();
+        o.connect(f); f.connect(g); g.connect(ctx.destination);
+        o.type = 'sawtooth'; o.frequency.value = 2000 + Math.random()*3000;
+        f.type = 'bandpass'; f.frequency.value = 3000;
+        g.gain.setValueAtTime(0.15, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+        o.start(); o.stop(ctx.currentTime + 0.15);
+      }, i * 200);
+    }
+  }, 800);
+}
+
+function showScreen(id) {
+  ['start-screen','quiz-screen','result-screen'].forEach(s => {
+    const el = document.getElementById(s);
+    el.classList.add('hidden');
+    el.classList.remove('flex');
+  });
+  const target = document.getElementById(id);
+  target.classList.remove('hidden');
+  target.classList.add('flex');
+}
+
+function startQuiz() {
+  current = 0; score = 0; answered = false;
+  playClick();
+  showScreen('quiz-screen');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  answered = false;
+  const q = questions[current];
+  document.getElementById('q-number').textContent = `${current+1}/${questions.length}`;
+  document.getElementById('q-score').textContent = `⭐ ${score}`;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('q-feedback').classList.add('hidden');
+  document.getElementById('next-btn').classList.add('hidden');
+  
+  const opts = document.getElementById('q-options');
+  opts.innerHTML = '';
+  
+  const colors = ['bg-blue-200 text-blue-700','bg-pink-200 text-pink-700','bg-orange-200 text-orange-700','bg-green-200 text-green-700'];
+  
+  if (q.type === 'tf') {
+    ['Benar ✅','Salah ❌'].forEach((label, i) => {
+      const btn = document.createElement('button');
+      btn.className = `btn-quiz ${colors[i]} font-bold text-xl py-5 rounded-2xl shadow-md w-full`;
+      btn.textContent = label;
+      btn.onclick = () => checkAnswer(i === 0 ? true : false, btn);
+      opts.appendChild(btn);
+    });
+  } else {
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = `btn-quiz ${colors[i]} font-bold text-lg py-4 rounded-2xl shadow-md w-full`;
+      btn.textContent = opt;
+      btn.onclick = () => checkAnswer(i, btn);
+      opts.appendChild(btn);
+    });
+  }
+}
+
+function checkAnswer(selected, btn) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const correct = q.type === 'tf' ? selected === q.answer : selected === q.answer;
+  const fb = document.getElementById('q-feedback');
+  const nextBtn = document.getElementById('next-btn');
+  fb.classList.remove('hidden');
+  nextBtn.classList.remove('hidden');
+  
+  if (correct) {
+    score++;
+    playCorrect();
+    btn.classList.add('ring-4','ring-green-400');
+    fb.innerHTML = `<span class="text-green-600">${q.explanation}</span>`;
+    fb.className = 'text-center mt-6 font-bold bounce-in bg-green-50 p-4 rounded-2xl text-base';
+  } else {
+    playWrong();
+    btn.classList.add('ring-4','ring-red-300');
+    let correctText = '';
+    if (q.type === 'tf') {
+      correctText = q.answer ? 'Benar ✅' : 'Salah ❌';
+    } else {
+      correctText = q.options[q.answer];
+    }
+    fb.innerHTML = `<span class="text-red-600">Jawaban yang benar:</span><br><span class="text-green-600 font-black text-base">${correctText}</span><br><span class="text-gray-600 text-sm mt-2 block">${q.explanation}</span>`;
+    fb.className = 'text-center mt-6 font-bold bounce-in bg-red-50 p-4 rounded-2xl text-base';
+    const buttons = document.getElementById('q-options').querySelectorAll('button');
+    if (q.type === 'tf') {
+      buttons[q.answer ? 0 : 1].classList.add('ring-4','ring-green-400');
+    } else {
+      buttons[q.answer].classList.add('ring-4','ring-green-400');
+    }
+  }
+  document.getElementById('q-score').textContent = `⭐ ${score}`;
+}
+
+function goNext() {
+  playClick();
+  current++;
+  if (current < questions.length) renderQuestion();
+  else showResult();
+}
+
+function showResult() {
+  showScreen('result-screen');
+  playCelebration();
+  const pct = score / questions.length;
+  let msg = pct >= 0.8 ? 'MasyaAllah Hebat! 🌟' : pct >= 0.5 ? 'Kerja Bagus! 👏' : 'Semangat Belajar! 💪';
+  document.getElementById('result-msg').textContent = msg;
+  document.getElementById('result-score').textContent = `${score} / ${questions.length}`;
+  spawnConfetti();
+  spawnFireworks();
+}
+
+function spawnConfetti() {
+  const container = document.getElementById('confetti-container');
+  container.innerHTML = '';
+  const colors = ['#FFB6C1','#87CEEB','#FFD700','#98FB98','#DDA0DD'];
+  for (let i = 0; i < 30; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random()*100 + '%';
+    piece.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
+    piece.style.animationDelay = Math.random()*2 + 's';
+    piece.style.width = (Math.random()*8+6)+'px';
+    piece.style.height = piece.style.width;
+    container.appendChild(piece);
+  }
+}
+
+function spawnFireworks() {
+  const container = document.getElementById('confetti-container');
+  const colors = ['#FF1744','#FFD600','#00E676','#2979FF','#AA00FF','#FF9100'];
+  function burst(x, y) {
+    for (let i = 0; i < 20; i++) {
+      const p = document.createElement('div');
+      p.style.cssText = `position:absolute;left:${x}%;top:${y}%;width:6px;height:6px;border-radius:50%;background:${colors[Math.floor(Math.random()*colors.length)]};pointer-events:none;`;
+      const angle = (Math.PI*2/20)*i;
+      const dist = 80 + Math.random()*60;
+      const dx = Math.cos(angle)*dist;
+      const dy = Math.sin(angle)*dist;
+      p.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${dx}px,${dy}px) scale(0)`,opacity:0}],{duration:1000+Math.random()*500,easing:'cubic-bezier(0,0,0.2,1)',fill:'forwards'});
+      container.appendChild(p);
+      setTimeout(()=>p.remove(), 1500);
+    }
+  }
+  // Multiple firework bursts
+  setTimeout(()=>burst(30,30),200);
+  setTimeout(()=>burst(70,25),600);
+  setTimeout(()=>burst(50,40),1000);
+  setTimeout(()=>burst(20,50),1400);
+  setTimeout(()=>burst(80,45),1800);
+  setTimeout(()=>burst(50,20),2200);
+}
+
+function resetQuiz() { playClick(); startQuiz(); }
+
+// Element SDK
+const defaultConfig = {
+  quiz_title: "Quiz Anak Islam",
+  background_color: "#E3F2FD",
+  surface_color: "#FFFFFF",
+  text_color: "#455A64",
+  primary_action: "#F48FB1",
+  secondary_action: "#81D4FA",
+  font_family: "Nunito",
+  font_size: 16
+};
+
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => {
+    const bg = config.background_color || defaultConfig.background_color;
+    const txt = config.text_color || defaultConfig.text_color;
+    const surface = config.surface_color || defaultConfig.surface_color;
+    const font = config.font_family || 'Nunito';
+    const size = config.font_size || 16;
+
+    document.body.style.background = `linear-gradient(180deg, ${bg} 0%, #FFF8E1 50%, #FCE4EC 100%)`;
+    document.querySelectorAll('.bg-white\\/80').forEach(el => {
+      el.style.backgroundColor = surface + 'CC';
+    });
+    document.getElementById('q-text').style.color = txt;
+    document.querySelectorAll('*').forEach(el => {
+      el.style.fontFamily = `${font}, Nunito, sans-serif`;
+    });
+    document.getElementById('q-text').style.fontSize = `${size * 1.25}px`;
+  },
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.background_color || defaultConfig.background_color, set: v => { config.background_color = v; window.elementSdk.setConfig({background_color:v}); }},
+      { get: () => config.surface_color || defaultConfig.surface_color, set: v => { config.surface_color = v; window.elementSdk.setConfig({surface_color:v}); }},
+      { get: () => config.text_color || defaultConfig.text_color, set: v => { config.text_color = v; window.elementSdk.setConfig({text_color:v}); }},
+      { get: () => config.primary_action || defaultConfig.primary_action, set: v => { config.primary_action = v; window.elementSdk.setConfig({primary_action:v}); }},
+      { get: () => config.secondary_action || defaultConfig.secondary_action, set: v => { config.secondary_action = v; window.elementSdk.setConfig({secondary_action:v}); }}
+    ],
+    borderables: [],
+    fontEditable: { get: () => config.font_family || 'Nunito', set: v => { config.font_family = v; window.elementSdk.setConfig({font_family:v}); }},
+    fontSizeable: { get: () => config.font_size || 16, set: v => { config.font_size = v; window.elementSdk.setConfig({font_size:v}); }}
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ["quiz_title", config.quiz_title || defaultConfig.quiz_title]
+  ])
+});
+</script>
+  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a05fb32efec7fd22',t:'MTc4MDUwMDIxNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0b896eb12bf4abc',t:'MTc4MTQzMjI5MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
